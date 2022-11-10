@@ -19,6 +19,12 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction --no-root
 
+      - name: Cache dataset
+        uses: actions/cache@v3
+        with:
+          path: src/concept_bottleneck/data/CUB_200_2011.tgz
+          key: ${{ runner.os }}-CUB_200_2011.tgz
+
       - name: Test
         run: poetry run python -m pytest
 

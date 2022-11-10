@@ -1,13 +1,14 @@
 {
   "venvPath": ".",
   "venv": ".venv",
-  "typeCheckingMode": "strict",
+  "typeCheckingMode": "basic",
   "useLibraryCodeForTypes": true,
+  "reportMissingTypeStubs": "none",
+  "reportUnknownMemberType": "none",
   "reportCallInDefaultInitializer": "warning",
   "reportImplicitStringConcatenation": "warning",
   "reportMissingSuperCall": "warning",
   "reportPropertyTypeMismatch": "warning",
   "reportUninitializedInstanceVariable": "warning",
-  "reportUnnecessaryTypeIgnoreComment": "warning",
-  "reportUnusedCallResult": "warning"
+  "reportUnnecessaryTypeIgnoreComment": "warning"
 }
