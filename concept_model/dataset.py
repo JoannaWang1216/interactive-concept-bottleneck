@@ -4,9 +4,9 @@ import numpy as np
 import numpy.typing as npt
 import torch
 from torch.utils.data import Dataset
+from torchvision import transforms
 from torchvision.datasets.folder import pil_loader
 from torchvision.datasets.utils import download_and_extract_archive
-from torchvision.transforms import ToTensor
 
 URL = "https://data.caltech.edu/records/65de6-vp158/files/CUB_200_2011.tgz"
 TGZ_MD5 = "97eceeb196236b17998738112f37df78"
@@ -37,7 +37,18 @@ class CUBImageToAttributes(Dataset):
     def __getitem__(self, idx: int):
         image_path = ROOT / "CUB_200_2011" / "images" / self.image_paths[idx]
 
-        img = ToTensor()(pil_loader(str(image_path)))
+        preprocess = transforms.Compose(
+            [
+                transforms.Resize(299),
+                transforms.CenterCrop(299),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
+
+        img = preprocess(pil_loader(str(image_path)))
 
         target = torch.from_numpy(self.image_attributes[idx])
 
