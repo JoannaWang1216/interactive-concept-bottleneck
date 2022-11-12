@@ -74,7 +74,7 @@ class CUBAttributesToClass(Dataset):
 
     def __getitem__(self, idx: int):
         attributes = torch.from_numpy(self.image_attributes[idx])
-        target = torch.from_numpy(self.image_class[idx] - 1)
+        target = self.image_class[idx] - 1
 
         return attributes, target
 

@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-from concept_model.dataset import ROOT, CUBImageToAttributes
+from concept_model.dataset import ROOT, CUBAttributesToClass, CUBImageToAttributes
 
 CUBImageToAttributes(train=True)  # download the dataset
 
@@ -38,11 +38,19 @@ def test_cub200_2011_image_class_labels_image_ids_are_sorted():
 
 
 def test_cub200_2011_train_size():
-    assert len(CUBImageToAttributes(train=True)) == 5994
+    assert (
+        len(CUBImageToAttributes(train=True))
+        == len(CUBAttributesToClass(train=True))
+        == 5994
+    )
 
 
 def test_cub200_2011_test_size():
-    assert len(CUBImageToAttributes(train=False)) == 5794
+    assert (
+        len(CUBImageToAttributes(train=False))
+        == len(CUBAttributesToClass(train=False))
+        == 5794
+    )
 
 
 def test_cub200_image_to_attributes_getitem():
@@ -53,3 +61,13 @@ def test_cub200_image_to_attributes_getitem():
         image, attributes = dataset[idx]
         assert attributes.shape == (312,)
         assert image is not None
+
+
+def test_cub200_attributes_to_class_getitem():
+    dataset = CUBAttributesToClass(train=True)
+
+    for _ in range(500):
+        idx = random.randint(0, len(dataset) - 1)
+        attributes, label = dataset[idx]
+        assert attributes.shape == (312,)
+        assert 0 <= label <= 199
