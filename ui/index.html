@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Interactive Concept Bottleneck Model</title>
+    <style></style>
+  </head>
+  <body>
+    <p>Upload an image</p>
+    <button id="upload-button">Choose from local files</button>
+    <p>Uploaded image</p>
+    <p id="uploaded-image"></p>
+    <button id="predict-button" disabled>Predict</button>
+    <p>Recognized concepts</p>
+    <p id="recognized-concepts-table"></p>
+    <p>1 2 3 ... 78</p>
+    <p>Final prediction</p>
+    <p id="final-prediction-table"></p>
+    <p>1 2 3 ... 50</p>
+    <button id="rerun-button" disabled>Rerun</button>
+
+    <script>
+      const disableInputs = () => {
+        uploadButton.disabled = true;
+        predictButton.disabled = true;
+        rerunButton.disabled = true;
+        document.getElementById("recognized-concepts-table").innerHTML =
+          '<div class="lds-dual-ring"></div>';
+        document.getElementById("final-prediction-table").innerHTML =
+          '<div class="lds-dual-ring"></div>';
+      };
+
+      const enableInputs = () => {
+        uploadButton.disabled = false;
+        predictButton.disabled = false;
+        rerunButton.disabled = false;
+      };
+    </script>
+  </body>
+</html>
