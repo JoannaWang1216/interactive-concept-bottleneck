@@ -33,8 +33,14 @@
       </div>
 
       <div class="flex gap-2 m-2">
-        <button class="btn flex-1">Upload Image</button>
-        <button class="btn flex-1">Predict</button>
+        <button class="btn flex-1" id="upload-button">Upload Image</button>
+        <input
+          type="file"
+          id="file-input"
+          class="hidden"
+          accept=".jpg, .jpeg, .png"
+        />
+        <button class="btn flex-1 btn-disabled">Predict</button>
       </div>
 
       <div class="flex gap-2 p-2">
@@ -127,7 +133,15 @@
         </div>
       </div>
 
-      <button class="btn m-2">Rerun</button>
+      <button class="btn m-2 btn-disabled">Rerun</button>
     </div>
+    <script>
+      const uploadImage = async () => {
+        document.getElementById("file-input").click();
+      };
+
+      const uploadButton = document.getElementById("upload-button");
+      uploadButton.addEventListener("click", () => uploadImage().then(render));
+    </script>
   </body>
 </html>
