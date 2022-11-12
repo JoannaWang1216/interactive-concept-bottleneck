@@ -25,11 +25,9 @@ class CUBImageToAttributes(Dataset):
                 md5=TGZ_MD5,
             )
 
-        self.train_test_split = load_train_test_split()
-        self.image_attributes = load_image_attribute_labels(
-            train, self.train_test_split
-        )
-        self.image_paths = load_image_paths(train, self.train_test_split)
+        train_test_split = load_train_test_split()
+        self.image_attributes = load_image_attribute_labels(train, train_test_split)
+        self.image_paths = load_image_paths(train, train_test_split)
 
     def __len__(self):
         return len(self.image_attributes)
@@ -53,6 +51,32 @@ class CUBImageToAttributes(Dataset):
         target = torch.from_numpy(self.image_attributes[idx])
 
         return img, target
+
+
+class CUBAttributesToClass(Dataset):
+    def __init__(self, train: bool, download: bool = True):
+        super().__init__()
+
+        if download and not (ROOT / "CUB_200_2011").exists():
+            download_and_extract_archive(
+                url=URL,
+                download_root=str(ROOT),
+                filename="CUB_200_2011.tgz",
+                md5=TGZ_MD5,
+            )
+
+        train_test_split = load_train_test_split()
+        self.image_class = load_image_class_labels(train, train_test_split)
+        self.image_attributes = load_image_attribute_labels(train, train_test_split)
+
+    def __len__(self):
+        return len(self.image_class)
+
+    def __getitem__(self, idx: int):
+        attributes = torch.from_numpy(self.image_attributes[idx])
+        target = torch.from_numpy(self.image_class[idx] - 1)
+
+        return attributes, target
 
 
 def load_train_test_split():
@@ -87,3 +111,14 @@ def load_image_paths(
         return tuple(image_paths[i] for i in np.nonzero(train_test_split == 1)[0])
     else:
         return tuple(image_paths[i] for i in np.nonzero(train_test_split == 0)[0])
+
+
+def load_image_class_labels(
+    train: bool, train_test_split: npt.NDArray[np.int_]
+) -> npt.NDArray[np.int_]:
+    filepath = ROOT / "CUB_200_2011" / "image_class_labels.txt"
+    image_class = np.loadtxt(filepath, usecols=1, dtype=np.int_)
+    if train:
+        return image_class[np.nonzero(train_test_split == 1)]
+    else:
+        return image_class[np.nonzero(train_test_split == 0)]
