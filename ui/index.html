@@ -145,10 +145,10 @@
         uploadButton.classList.add("btn-disabled");
         predictButton.classList.add("btn-disabled");
         rerunButton.classList.add("btn-disabled");
-        document.getElementById("recognized-concepts-table").innerHTML =
-          '<div class="lds-dual-ring"></div>';
-        document.getElementById("final-prediction-table").innerHTML =
-          '<div class="lds-dual-ring"></div>';
+        // document.getElementById("recognized-concepts-table").innerHTML =
+        //   '<div class="lds-dual-ring"></div>';
+        // document.getElementById("final-prediction-table").innerHTML =
+        //   '<div class="lds-dual-ring"></div>';
       };
 
       const enableInputs = () => {
@@ -157,8 +157,34 @@
         rerunButton.classList.remove("btn-disabled");
       };
 
+      const predict = async () => {
+        if (!uploadedImageData) {
+          console.error("No image uploaded");
+          return;
+        }
+        disableInputs();
+        const formData = new FormData();
+        formData.append("image", uploadedImageData);
+
+        return fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          body: formData,
+        });
+        // .then((response) => response.json())
+        // .catch((error) => {
+        //   console.error(error);
+        //   return {
+        //     model_accuracy: 0,
+        //     predict_result: "Error",
+        //     predict_prob: 0,
+        //     words_importance: {},
+        //   };
+        // });
+      };
+
       const uploadImage = (event) => {
         console.log(event);
+        uploadedImageData = event.target.files[0];
         uploadedImage.src = URL.createObjectURL(event.target.files[0]);
         document
           .getElementById("uploaded-image-container")
@@ -166,6 +192,8 @@
         document.getElementById("image-icon").classList.add("hidden");
         predictButton.classList.remove("btn-disabled");
       };
+
+      let uploadedImageData = undefined;
 
       const fileInput = document.getElementById("file-input");
       fileInput.addEventListener("change", uploadImage);
@@ -176,6 +204,8 @@
       const uploadedImage = document.getElementById("uploaded-image");
 
       const predictButton = document.getElementById("predict-button");
+      predictButton.addEventListener("click", () => predict());
+
       const rerunButton = document.getElementById("rerun-button");
     </script>
   </body>
