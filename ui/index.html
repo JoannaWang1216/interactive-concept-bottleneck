@@ -169,17 +169,19 @@
         return fetch("http://127.0.0.1:5000/predict", {
           method: "POST",
           body: formData,
-        });
-        // .then((response) => response.json())
-        // .catch((error) => {
-        //   console.error(error);
-        //   return {
-        //     model_accuracy: 0,
-        //     predict_result: "Error",
-        //     predict_prob: 0,
-        //     words_importance: {},
-        //   };
-        // });
+        })
+          .then((response) => response.json())
+          .catch((error) => {
+            console.error(error);
+            return {
+              recognized_concepts: {},
+              final_prediction: {},
+            };
+          });
+      };
+
+      const render = (data) => {
+        console.log(data);
       };
 
       const uploadImage = (event) => {
@@ -204,7 +206,7 @@
       const uploadedImage = document.getElementById("uploaded-image");
 
       const predictButton = document.getElementById("predict-button");
-      predictButton.addEventListener("click", () => predict());
+      predictButton.addEventListener("click", () => predict().then(render));
 
       const rerunButton = document.getElementById("rerun-button");
     </script>

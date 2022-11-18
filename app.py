@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import numpy as np
 import numpy.typing as npt
 import torch
@@ -26,7 +28,7 @@ def predict_user_input():
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     stream = request.files["image"].stream.read()
-    img = Image.open(stream)
+    img = Image.open(BytesIO(stream))
 
     preprocess = transforms.Compose(
         [
@@ -47,7 +49,7 @@ def predict_user_input():
     image_to_attributes_model.eval()
 
     with torch.no_grad():
-        attributes = image_to_attributes_model(img.unsqueeze(0))  # type: ignore
+        attributes = image_to_attributes_model(img.unsqueeze(0).to(device))  # type: ignore
         concepts_prob = torch.nn.Sigmoid()(attributes)
         final_prediction_input_concepts = (concepts_prob > 0.5).to(torch.int64)
 
@@ -67,12 +69,12 @@ def predict_user_input():
     final_prediction_input_concepts.to(device)
     with torch.no_grad():
         class_prediction = attributes_to_class_model(
-            final_prediction_input_concepts.to(torch.float).unsqueeze(0)
+            final_prediction_input_concepts.to(torch.float)
         )
-        species_probs = torch.nn.Softmax(dim=1)(class_prediction)
+        species_probs = torch.nn.Softmax(dim=1)(class_prediction)[0]
 
     final_prediction: dict[str, float] = {}
-    for i, species_prob in enumerate(species_probs[0]):
+    for i, species_prob in enumerate(species_probs):
         final_prediction[CLASSES[i]] = species_prob.item()
 
     response = jsonify(
