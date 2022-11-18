@@ -47,98 +47,67 @@
 
       <div class="flex gap-2 p-2">
         <div class="flex flex-col flex-1 gap-1 items-center">
-          <p class="text-lg">Recognized Concepts</p>
-          <div class="w-full shadow-xl rounded-lg overflow-hidden">
-            <table
-              class="table text-center w-full table-fixed"
-              id="recognized-concepts-table"
-            >
+          <p class="text-lg hidden" id="recognized-concepts-table-title">
+            Recognized Concepts
+          </p>
+          <div
+            class="w-full shadow-xl rounded-lg overflow-hidden hidden"
+            id="recognized-concepts-table"
+          >
+            <table class="table text-center w-full table-fixed">
               <thead>
                 <tr>
                   <th>Concepts</th>
                   <th>Probability</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>Concept 1</td>
-                  <td>
-                    <input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      placeholder="Probability"
-                      value="0.5"
-                      class="input input-xs w-full max-w-xs text-center text-base"
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td>Concept 2</td>
-                  <td>
-                    <input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      placeholder="Probability"
-                      value="0.5"
-                      class="input input-xs w-full max-w-xs text-center text-base"
-                    />
-                  </td>
-                </tr>
-              </tbody>
+              <tbody id="concepts-table-body"></tbody>
             </table>
 
             <div class="flex w-full">
               <button class="btn btn-xs btn-ghost rounded-none">«</button>
               <button
                 class="btn btn-xs btn-ghost flex-1 rounded-none no-animation"
-              >
-                Page 22
-              </button>
+                id="concepts-table-page-button"
+              ></button>
               <button class="btn btn-xs btn-ghost rounded-none">»</button>
             </div>
           </div>
         </div>
 
         <div class="flex flex-col flex-1 gap-1 items-center">
-          <p class="text-lg">Final Prediction</p>
-          <div class="w-full shadow-xl rounded-lg overflow-hidden">
-            <table class="table text-center w-full" id="final-prediction-table">
+          <p class="text-lg hidden" id="final-prediction-table-title">
+            Final Prediction
+          </p>
+          <div
+            class="w-full shadow-xl rounded-lg overflow-hidden hidden"
+            id="final-prediction-table"
+          >
+            <table class="table text-center w-full">
               <thead>
                 <tr>
                   <th>Species</th>
                   <th>Probability</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>Concept 1</td>
-                  <td>0.5</td>
-                </tr>
-                <tr>
-                  <td>Concept 2</td>
-                  <td>0.5</td>
-                </tr>
-              </tbody>
+              <tbody id="final-prediction-table-body"></tbody>
             </table>
 
             <div class="flex w-full">
               <button class="btn btn-xs btn-ghost rounded-none">«</button>
               <button
                 class="btn btn-xs btn-ghost flex-1 rounded-none no-animation"
-              >
-                Page 22
-              </button>
+                id="final-prediction-table-page-button"
+              ></button>
               <button class="btn btn-xs btn-ghost rounded-none">»</button>
             </div>
           </div>
         </div>
       </div>
 
-      <button class="btn m-2 btn-disabled" id="rerun-button">Rerun</button>
+      <button class="btn m-2 btn-disabled hidden" id="rerun-button">
+        Rerun
+      </button>
     </div>
     <script>
       const disableInputs = () => {
@@ -182,6 +151,91 @@
 
       const render = (data) => {
         console.log(data);
+        enableInputs();
+
+        const conceptsItems = Object.entries(data.recognized_concepts);
+        conceptsItems.sort((a, b) => b[1] - a[1]);
+        let pagedConceptsItems = [];
+        for (let i = 0; i < conceptsItems.length; i++) {
+          if (i % 8 === 0) {
+            pagedConceptsItems.push([]);
+          }
+          pagedConceptsItems[pagedConceptsItems.length - 1].push(
+            conceptsItems[i]
+          );
+        }
+
+        const conceptsTableBody = document.getElementById(
+          "concepts-table-body"
+        );
+        conceptsTableBody.innerHTML = ``;
+        pagedConceptsItems[conceptsTablePageNumber - 1].forEach(
+          (conceptItem) => {
+            conceptsTableBody.innerHTML += `
+              <tr>
+                <td class="overflow-hidden text-ellipsis">${conceptItem[0]}</td>
+                <td class="overflow-hidden text-ellipsis">
+                  <input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.0001"
+                    placeholder="Probability"
+                    value="${conceptItem[1].toFixed(4)}"
+                    class="input input-xs w-full max-w-xs text-center text-base"
+                  />
+                </td>
+              </tr>
+            `;
+          }
+        );
+        document.getElementById("concepts-table-page-button").innerHTML =
+          conceptsTablePageNumber + "/" + pagedConceptsItems.length;
+        document
+          .getElementById("recognized-concepts-table-title")
+          .classList.remove("hidden");
+        document
+          .getElementById("recognized-concepts-table")
+          .classList.remove("hidden");
+
+        const classItems = Object.entries(data.final_prediction);
+        classItems.sort((a, b) => b[1] - a[1]);
+        let pagedClassItems = [];
+        for (let i = 0; i < classItems.length; i++) {
+          if (i % 8 === 0) {
+            pagedClassItems.push([]);
+          }
+          pagedClassItems[pagedClassItems.length - 1].push(classItems[i]);
+        }
+
+        const finalPredictionTableBody = document.getElementById(
+          "final-prediction-table-body"
+        );
+        finalPredictionTableBody.innerHTML = ``;
+        pagedClassItems[finalPredictionTablePageNumber - 1].forEach(
+          (classItem) => {
+            finalPredictionTableBody.innerHTML += `
+              <tr>
+                <td class="overflow-hidden text-ellipsis">${classItem[0]}</td>
+                <td class="overflow-hidden text-ellipsis">
+                  ${classItem[1].toFixed(4)}
+                </td>
+              </tr>
+            `;
+          }
+        );
+        document.getElementById(
+          "final-prediction-table-page-button"
+        ).innerHTML =
+          finalPredictionTablePageNumber + "/" + pagedClassItems.length;
+        document
+          .getElementById("final-prediction-table-title")
+          .classList.remove("hidden");
+        document
+          .getElementById("final-prediction-table")
+          .classList.remove("hidden");
+
+        rerunButton.classList.remove("hidden");
       };
 
       const uploadImage = (event) => {
@@ -209,6 +263,9 @@
       predictButton.addEventListener("click", () => predict().then(render));
 
       const rerunButton = document.getElementById("rerun-button");
+
+      const conceptsTablePageNumber = 1;
+      const finalPredictionTablePageNumber = 1;
     </script>
   </body>
 </html>
