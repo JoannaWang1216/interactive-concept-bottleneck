@@ -65,12 +65,22 @@
             </table>
 
             <div class="flex w-full">
-              <button class="btn btn-xs btn-ghost rounded-none">«</button>
+              <button
+                class="btn btn-xs btn-ghost rounded-none"
+                id="concepts-table-page-left-button"
+              >
+                «
+              </button>
               <button
                 class="btn btn-xs btn-ghost flex-1 rounded-none no-animation"
                 id="concepts-table-page-button"
               ></button>
-              <button class="btn btn-xs btn-ghost rounded-none">»</button>
+              <button
+                class="btn btn-xs btn-ghost rounded-none"
+                id="concepts-table-page-right-button"
+              >
+                »
+              </button>
             </div>
           </div>
         </div>
@@ -94,12 +104,22 @@
             </table>
 
             <div class="flex w-full">
-              <button class="btn btn-xs btn-ghost rounded-none">«</button>
+              <button
+                class="btn btn-xs btn-ghost rounded-none"
+                id="final-prediction-table-page-left-button"
+              >
+                «
+              </button>
               <button
                 class="btn btn-xs btn-ghost flex-1 rounded-none no-animation"
                 id="final-prediction-table-page-button"
               ></button>
-              <button class="btn btn-xs btn-ghost rounded-none">»</button>
+              <button
+                class="btn btn-xs btn-ghost rounded-none"
+                id="final-prediction-table-page-right-button"
+              >
+                »
+              </button>
             </div>
           </div>
         </div>
@@ -155,7 +175,7 @@
 
         const conceptsItems = Object.entries(data.recognized_concepts);
         conceptsItems.sort((a, b) => b[1] - a[1]);
-        let pagedConceptsItems = [];
+        pagedConceptsItems = [];
         for (let i = 0; i < conceptsItems.length; i++) {
           if (i % 8 === 0) {
             pagedConceptsItems.push([]);
@@ -165,13 +185,26 @@
           );
         }
 
+        const classItems = Object.entries(data.final_prediction);
+        classItems.sort((a, b) => b[1] - a[1]);
+        pagedClassItems = [];
+        for (let i = 0; i < classItems.length; i++) {
+          if (i % 8 === 0) {
+            pagedClassItems.push([]);
+          }
+          pagedClassItems[pagedClassItems.length - 1].push(classItems[i]);
+        }
+
+        renderTables(pagedConceptsItems, pagedClassItems);
+      };
+
+      const renderTables = (conceptsItems, classItems) => {
         const conceptsTableBody = document.getElementById(
           "concepts-table-body"
         );
         conceptsTableBody.innerHTML = ``;
-        pagedConceptsItems[conceptsTablePageNumber - 1].forEach(
-          (conceptItem) => {
-            conceptsTableBody.innerHTML += `
+        conceptsItems[conceptsTablePageNumber - 1].forEach((conceptItem) => {
+          conceptsTableBody.innerHTML += `
               <tr>
                 <td class="overflow-hidden text-ellipsis">${conceptItem[0]}</td>
                 <td class="overflow-hidden text-ellipsis">
@@ -187,10 +220,9 @@
                 </td>
               </tr>
             `;
-          }
-        );
+        });
         document.getElementById("concepts-table-page-button").innerHTML =
-          conceptsTablePageNumber + "/" + pagedConceptsItems.length;
+          conceptsTablePageNumber + "/" + conceptsItems.length;
         document
           .getElementById("recognized-concepts-table-title")
           .classList.remove("hidden");
@@ -198,23 +230,12 @@
           .getElementById("recognized-concepts-table")
           .classList.remove("hidden");
 
-        const classItems = Object.entries(data.final_prediction);
-        classItems.sort((a, b) => b[1] - a[1]);
-        let pagedClassItems = [];
-        for (let i = 0; i < classItems.length; i++) {
-          if (i % 8 === 0) {
-            pagedClassItems.push([]);
-          }
-          pagedClassItems[pagedClassItems.length - 1].push(classItems[i]);
-        }
-
         const finalPredictionTableBody = document.getElementById(
           "final-prediction-table-body"
         );
         finalPredictionTableBody.innerHTML = ``;
-        pagedClassItems[finalPredictionTablePageNumber - 1].forEach(
-          (classItem) => {
-            finalPredictionTableBody.innerHTML += `
+        classItems[finalPredictionTablePageNumber - 1].forEach((classItem) => {
+          finalPredictionTableBody.innerHTML += `
               <tr>
                 <td class="overflow-hidden text-ellipsis">${classItem[0]}</td>
                 <td class="overflow-hidden text-ellipsis">
@@ -222,12 +243,10 @@
                 </td>
               </tr>
             `;
-          }
-        );
+        });
         document.getElementById(
           "final-prediction-table-page-button"
-        ).innerHTML =
-          finalPredictionTablePageNumber + "/" + pagedClassItems.length;
+        ).innerHTML = finalPredictionTablePageNumber + "/" + classItems.length;
         document
           .getElementById("final-prediction-table-title")
           .classList.remove("hidden");
@@ -251,6 +270,9 @@
 
       let uploadedImageData = undefined;
 
+      let pagedConceptsItems = undefined;
+      let pagedClassItems = undefined;
+
       const fileInput = document.getElementById("file-input");
       fileInput.addEventListener("change", uploadImage);
 
@@ -264,8 +286,46 @@
 
       const rerunButton = document.getElementById("rerun-button");
 
-      const conceptsTablePageNumber = 1;
-      const finalPredictionTablePageNumber = 1;
+      const conceptsTablePageLeftButton = document.getElementById(
+        "concepts-table-page-left-button"
+      );
+      conceptsTablePageLeftButton.addEventListener("click", () => {
+        if (conceptsTablePageNumber > 1) {
+          conceptsTablePageNumber--;
+          renderTables(pagedConceptsItems, pagedClassItems);
+        }
+      });
+      const conceptsTablePageRightButton = document.getElementById(
+        "concepts-table-page-right-button"
+      );
+      conceptsTablePageRightButton.addEventListener("click", () => {
+        if (conceptsTablePageNumber < pagedConceptsItems.length) {
+          conceptsTablePageNumber++;
+          renderTables(pagedConceptsItems, pagedClassItems);
+        }
+      });
+
+      const finalPredictionTablePageLeftButton = document.getElementById(
+        "final-prediction-table-page-left-button"
+      );
+      finalPredictionTablePageLeftButton.addEventListener("click", () => {
+        if (finalPredictionTablePageNumber > 1) {
+          finalPredictionTablePageNumber--;
+          renderTables(pagedConceptsItems, pagedClassItems);
+        }
+      });
+      const finalPredictionTablePageRightButton = document.getElementById(
+        "final-prediction-table-page-right-button"
+      );
+      finalPredictionTablePageRightButton.addEventListener("click", () => {
+        if (finalPredictionTablePageNumber < pagedClassItems.length) {
+          finalPredictionTablePageNumber++;
+          renderTables(pagedConceptsItems, pagedClassItems);
+        }
+      });
+
+      let conceptsTablePageNumber = 1;
+      let finalPredictionTablePageNumber = 1;
     </script>
   </body>
 </html>
