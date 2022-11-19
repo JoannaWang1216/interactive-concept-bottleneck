@@ -203,12 +203,14 @@
           "concepts-table-body"
         );
         conceptsTableBody.innerHTML = ``;
+        let i = 0;
         conceptsItems[conceptsTablePageNumber - 1].forEach((conceptItem) => {
           conceptsTableBody.innerHTML += `
               <tr>
                 <td class="overflow-hidden text-ellipsis">${conceptItem[0]}</td>
                 <td class="overflow-hidden text-ellipsis">
                   <input
+                    id="concepts-table-input-${i}"
                     type="number"
                     min="0"
                     max="1"
@@ -220,7 +222,17 @@
                 </td>
               </tr>
             `;
+          i++;
         });
+        for (let i = 0; i < 8; i++) {
+          document
+            .getElementById(`concepts-table-input-${i}`)
+            .addEventListener("change", (event) => {
+              const value = event.target.value * 1;
+              pagedConceptsItems[conceptsTablePageNumber - 1][i][1] = value;
+              renderTables(pagedConceptsItems, pagedClassItems);
+            });
+        }
         document.getElementById("concepts-table-page-button").innerHTML =
           conceptsTablePageNumber + "/" + conceptsItems.length;
         document
