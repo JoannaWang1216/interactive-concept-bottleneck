@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from io import BytesIO
 
 import numpy as np
@@ -85,3 +86,13 @@ def predict_user_input():
     )
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
+
+
+@app.route("/rerun", methods=["POST"])
+def rerun():
+    if request.json is None:
+        return jsonify({"error": "No JSON provided"}), HTTPStatus.BAD_REQUEST
+
+    updated_concepts = request.json["updated_concepts"]
+    print(updated_concepts, type(updated_concepts))
+    return "", HTTPStatus.NO_CONTENT
