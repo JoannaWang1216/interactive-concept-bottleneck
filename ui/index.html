@@ -134,10 +134,6 @@
         uploadButton.classList.add("btn-disabled");
         predictButton.classList.add("btn-disabled");
         rerunButton.classList.add("btn-disabled");
-        // document.getElementById("recognized-concepts-table").innerHTML =
-        //   '<div class="lds-dual-ring"></div>';
-        // document.getElementById("final-prediction-table").innerHTML =
-        //   '<div class="lds-dual-ring"></div>';
       };
 
       const enableInputs = () => {
@@ -171,20 +167,35 @@
 
       const rerun = async () => {
         disableInputs();
+        // document.getElementById("recognized-concepts-table").innerHTML =
+        //   '<div class="lds-dual-ring"></div>';
+        // document.getElementById("final-prediction-table").innerHTML =
+        //   '<div class="lds-dual-ring"></div>';
         return fetch("http://127.0.0.1:5000/rerun", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             updated_concepts: pagedConceptsItems,
           }),
-        });
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            updatePagedClassItems(data.final_prediction);
+          });
       };
 
       const render = (data) => {
         console.log(data);
         enableInputs();
 
-        const conceptsItems = Object.entries(data.recognized_concepts);
+        updatePagedConceptsItems(data.recognized_concepts);
+        updatePagedClassItems(data.final_prediction);
+
+        renderTables(pagedConceptsItems, pagedClassItems);
+      };
+
+      const updatePagedConceptsItems = (concepts) => {
+        const conceptsItems = Object.entries(concepts);
         conceptsItems.sort((a, b) => b[1] - a[1]);
         pagedConceptsItems = [];
         for (let i = 0; i < conceptsItems.length; i++) {
@@ -195,8 +206,10 @@
             conceptsItems[i]
           );
         }
+      };
 
-        const classItems = Object.entries(data.final_prediction);
+      const updatePagedClassItems = (classes) => {
+        const classItems = Object.entries(classes);
         classItems.sort((a, b) => b[1] - a[1]);
         pagedClassItems = [];
         for (let i = 0; i < classItems.length; i++) {
@@ -205,8 +218,6 @@
           }
           pagedClassItems[pagedClassItems.length - 1].push(classItems[i]);
         }
-
-        renderTables(pagedConceptsItems, pagedClassItems);
       };
 
       const renderTables = (conceptsItems, classItems) => {
@@ -308,7 +319,11 @@
       predictButton.addEventListener("click", () => predict().then(render));
 
       const rerunButton = document.getElementById("rerun-button");
-      rerunButton.addEventListener("click", () => rerun());
+      rerunButton.addEventListener("click", async () => {
+        await rerun();
+        renderTables(pagedConceptsItems, pagedClassItems);
+        enableInputs();
+      });
 
       const conceptsTablePageLeftButton = document.getElementById(
         "concepts-table-page-left-button"

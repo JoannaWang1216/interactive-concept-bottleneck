@@ -93,6 +93,53 @@ def rerun():
     if request.json is None:
         return jsonify({"error": "No JSON provided"}), HTTPStatus.BAD_REQUEST
 
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
     updated_concepts = request.json["updated_concepts"]
-    print(updated_concepts, type(updated_concepts))
-    return "", HTTPStatus.NO_CONTENT
+
+    updated_concepts_prob_dict = {}
+    for page in updated_concepts:
+        for concept in page:
+            idx = np.asarray(IMAGE_ATTRIBUTES == concept[0]).nonzero()[0][0]
+            if concept[1] > 0.5:
+                updated_concepts_prob_dict[idx] = 1
+            else:
+                updated_concepts_prob_dict[idx] = 0
+
+    updated_final_prediction_input_concepts = []
+    for i in range(312):
+        updated_final_prediction_input_concepts.append(updated_concepts_prob_dict[i])
+
+    updated_final_prediction_input_concepts = torch.tensor(
+        updated_final_prediction_input_concepts
+    )
+    updated_final_prediction_input_concepts.to(device)
+
+    attributes_to_class_model = MLP(
+        in_channels=312,
+        hidden_channels=[200],
+        dropout=0.2,
+    )
+    attributes_to_class_model.load_state_dict(torch.load("attributes_to_class.pth"))
+    attributes_to_class_model.to(device)
+    attributes_to_class_model.eval()
+
+    with torch.no_grad():
+        class_prediction = attributes_to_class_model(
+            updated_final_prediction_input_concepts.to(torch.float)
+            .unsqueeze(0)
+            .to(device)
+        )
+        species_probs = torch.nn.Softmax(dim=1)(class_prediction)[0]
+
+    final_prediction: dict[str, float] = {}
+    for i, species_prob in enumerate(species_probs):
+        final_prediction[CLASSES[i]] = species_prob.item()
+
+    response = jsonify(
+        {
+            "final_prediction": final_prediction,
+        }
+    )
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
