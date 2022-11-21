@@ -1,8 +1,10 @@
 import pathlib
+import typing
 
 import numpy as np
 import numpy.typing as npt
 import torch
+from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 from torchvision.datasets.folder import pil_loader
@@ -12,9 +14,25 @@ URL = "https://data.caltech.edu/records/65de6-vp158/files/CUB_200_2011.tgz"
 TGZ_MD5 = "97eceeb196236b17998738112f37df78"
 ROOT = pathlib.Path(__file__).parent.resolve() / "data"
 
+DEFAULT_IMAGE_TRANSFORM = transforms.Compose(
+    [
+        transforms.Resize(299),
+        transforms.CenterCrop(299),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
+
 
 class CUBImageToAttributes(Dataset):
-    def __init__(self, train: bool, download: bool = True):
+    def __init__(
+        self,
+        train: bool,
+        download: bool = True,
+        transform: typing.Callable[
+            [Image.Image], torch.Tensor
+        ] = DEFAULT_IMAGE_TRANSFORM,
+    ):
         super().__init__()
 
         if download and not (ROOT / "CUB_200_2011").exists():
@@ -28,6 +46,7 @@ class CUBImageToAttributes(Dataset):
         train_test_split = load_train_test_split()
         self.image_attributes = load_image_attribute_labels(train, train_test_split)
         self.image_paths = load_image_paths(train, train_test_split)
+        self.transform = transform
 
     def __len__(self):
         return len(self.image_attributes)
@@ -35,18 +54,7 @@ class CUBImageToAttributes(Dataset):
     def __getitem__(self, idx: int):
         image_path = ROOT / "CUB_200_2011" / "images" / self.image_paths[idx]
 
-        preprocess = transforms.Compose(
-            [
-                transforms.Resize(299),
-                transforms.CenterCrop(299),
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                ),
-            ]
-        )
-
-        img = preprocess(pil_loader(str(image_path)))
+        img = self.transform(pil_loader(str(image_path)))
 
         target = torch.from_numpy(self.image_attributes[idx])
 
