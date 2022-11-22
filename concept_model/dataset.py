@@ -87,6 +87,43 @@ class CUBAttributesToClass(Dataset):
         return attributes, target
 
 
+class CUBImageToClass(Dataset):
+    def __init__(
+        self,
+        train: bool,
+        download: bool = True,
+        transform: typing.Callable[
+            [Image.Image], torch.Tensor
+        ] = DEFAULT_IMAGE_TRANSFORM,
+    ):
+        super().__init__()
+
+        if download and not (ROOT / "CUB_200_2011").exists():
+            download_and_extract_archive(
+                url=URL,
+                download_root=str(ROOT),
+                filename="CUB_200_2011.tgz",
+                md5=TGZ_MD5,
+            )
+
+        train_test_split = load_train_test_split()
+        self.image_class = load_image_class_labels(train, train_test_split)
+        self.image_paths = load_image_paths(train, train_test_split)
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.image_class)
+
+    def __getitem__(self, idx: int):
+        image_path = ROOT / "CUB_200_2011" / "images" / self.image_paths[idx]
+
+        img = self.transform(pil_loader(str(image_path)))
+
+        target = self.image_class[idx] - 1
+
+        return img, target
+
+
 def load_train_test_split():
     filepath = ROOT / "CUB_200_2011" / "train_test_split.txt"
     return np.loadtxt(filepath, usecols=1, dtype=np.int_)
