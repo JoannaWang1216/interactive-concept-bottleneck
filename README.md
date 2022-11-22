@@ -1,8 +1,10 @@
 # Interactive Concept Bottleneck Model
 
-CS593HAI Human-AI Interaction programming assignment 1 @Purdue.
+CS593HAI Human-AI Interaction programming assignment 2 @Purdue.
 
 ## Getting Started
+
+This project only supports Ubuntu 20.04 or later.
 
 Install Python 3.10.x.
 
@@ -26,7 +28,7 @@ poetry shell
 Start the application:
 
 ```sh
-python main.py
+flask run
 ```
 
 > Make sure you are in the project's root directory and your have activated the
