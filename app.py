@@ -43,9 +43,11 @@ def predict_user_input():
     img.to(device)  # type: ignore
 
     image_to_attributes_model = torch.hub.load(
-        "pytorch/vision:v0.10.0", "inception_v3", pretrained=False, num_classes=312
+        "pytorch/vision:v0.10.0", "inception_v3", weights=None, num_classes=312
     )
-    image_to_attributes_model.load_state_dict(torch.load("image_to_attributes.pth"))
+    image_to_attributes_model.load_state_dict(
+        torch.load("independent_image_to_attributes.pth")
+    )
     image_to_attributes_model.to(device)
     image_to_attributes_model.eval()
 
@@ -54,7 +56,7 @@ def predict_user_input():
         concepts_prob = torch.nn.Sigmoid()(attributes)
         final_prediction_input_concepts = (concepts_prob > 0.5).to(torch.int64)
 
-    recognized_concepts: dict[str, float] = {}
+    recognized_concepts: dict[np.str_, float] = {}
     for i, concept_prob in enumerate(concepts_prob[0]):
         recognized_concepts[IMAGE_ATTRIBUTES[i]] = concept_prob.item()
 
@@ -63,7 +65,9 @@ def predict_user_input():
         hidden_channels=[200],
         dropout=0.2,
     )
-    attributes_to_class_model.load_state_dict(torch.load("attributes_to_class.pth"))
+    attributes_to_class_model.load_state_dict(
+        torch.load("independent_attributes_to_class.pth")
+    )
     attributes_to_class_model.to(device)
     attributes_to_class_model.eval()
 
@@ -74,7 +78,7 @@ def predict_user_input():
         )
         species_probs = torch.nn.Softmax(dim=1)(class_prediction)[0]
 
-    final_prediction: dict[str, float] = {}
+    final_prediction: dict[np.str_, float] = {}
     for i, species_prob in enumerate(species_probs):
         final_prediction[CLASSES[i]] = species_prob.item()
 
@@ -120,7 +124,9 @@ def rerun():
         hidden_channels=[200],
         dropout=0.2,
     )
-    attributes_to_class_model.load_state_dict(torch.load("attributes_to_class.pth"))
+    attributes_to_class_model.load_state_dict(
+        torch.load("independent_attributes_to_class.pth")
+    )
     attributes_to_class_model.to(device)
     attributes_to_class_model.eval()
 
@@ -132,7 +138,7 @@ def rerun():
         )
         species_probs = torch.nn.Softmax(dim=1)(class_prediction)[0]
 
-    final_prediction: dict[str, float] = {}
+    final_prediction: dict[np.str_, float] = {}
     for i, species_prob in enumerate(species_probs):
         final_prediction[CLASSES[i]] = species_prob.item()
 
