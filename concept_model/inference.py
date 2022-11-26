@@ -56,13 +56,20 @@ class AttributesToClassModel:
         self.model.eval()
 
     def predict(
-        self, final_prediction_input_concepts: torch.Tensor
+        self, final_prediction_input_concepts: torch.Tensor, rerun: bool = False
     ) -> dict[np.str_, float]:
         final_prediction_input_concepts.to(self.device)
         with torch.no_grad():
-            class_prediction = self.model(
-                final_prediction_input_concepts.to(torch.float)
-            )
+            if rerun:
+                class_prediction = self.model(
+                    final_prediction_input_concepts.to(torch.float)
+                    .unsqueeze(0)
+                    .to(self.device)
+                )
+            else:
+                class_prediction = self.model(
+                    final_prediction_input_concepts.to(torch.float).to(self.device)
+                )
             species_probs = torch.nn.Softmax(dim=1)(class_prediction)[0]
 
         final_prediction: dict[np.str_, float] = {}
