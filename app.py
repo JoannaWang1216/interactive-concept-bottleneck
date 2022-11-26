@@ -57,10 +57,7 @@ def rerun():
     for page in updated_concepts:
         for concept in page:
             idx = np.asarray(IMAGE_ATTRIBUTES == concept[0]).nonzero()[0][0]
-            if concept[1] > 0.5:
-                updated_concepts_prob_dict[idx] = 1
-            else:
-                updated_concepts_prob_dict[idx] = 0
+            updated_concepts_prob_dict[idx] = concept[1]
 
     updated_final_prediction_input_concepts = []
     for i in range(312):
