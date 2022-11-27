@@ -35,7 +35,7 @@ class CUBImageToAttributes(Dataset):
     ):
         super().__init__()
 
-        if download and not (ROOT / "CUB_200_2011").exists():
+        if download and not (ROOT / "CUB_200_2011" / "images").exists():
             download_and_extract_archive(
                 url=URL,
                 download_root=str(ROOT),
@@ -65,7 +65,7 @@ class CUBAttributesToClass(Dataset):
     def __init__(self, train: bool, download: bool = True):
         super().__init__()
 
-        if download and not (ROOT / "CUB_200_2011").exists():
+        if download and not (ROOT / "CUB_200_2011" / "images").exists():
             download_and_extract_archive(
                 url=URL,
                 download_root=str(ROOT),
@@ -98,7 +98,7 @@ class CUBImageToClass(Dataset):
     ):
         super().__init__()
 
-        if download and not (ROOT / "CUB_200_2011").exists():
+        if download and not (ROOT / "CUB_200_2011" / "images").exists():
             download_and_extract_archive(
                 url=URL,
                 download_root=str(ROOT),
