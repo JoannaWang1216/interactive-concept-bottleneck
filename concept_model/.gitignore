@@ -1,1 +1,5 @@
 data/*
+!data/attributes.txt
+!data/CUB_200_2011/
+data/CUB_200_2011/*
+!data/CUB_200_2011/classes.txt
